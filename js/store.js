@@ -19,7 +19,7 @@ const PRODUCTS = {
     id: "juventus-pink",
     name: "Juventus 97-98 Pink",
     image: "images/juventuspink.PNG",
-    images: ["images/juventuspink.PNG", "images/kappamenspinkteeitaly.jpg", "images/pinkitaly.jpeg"],
+    images: ["images/juventuspink.PNG", "images/kappamenspinkteeitaly.jpg"],
     price: 29.99,
     description: "Premium Retro Jersey"
   },
@@ -98,9 +98,9 @@ function getProduct(id) {
 
 function productUrl(id) {
   const product = getProduct(id);
-  if (!product) return "/shop";
+  if (!product) return "shop.html";
 
-  return "/product/" + product.id;
+  return "product.html?id=" + product.id;
 }
 
 function getCart() {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shop - Nansik Retro Kit</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="icon" type="image/png" href="/images/nansikthumbnail.png">
+  <link rel="icon" type="image/png" href="images/nansikthumbnail.png">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="theme">
@@ -13,9 +13,9 @@
   <!-- Header -->
   <header class="site-header">
     <span class="site-tagline">(retro football kits)</span>
-    <h1 class="site-wordmark"><a href="/"><img class="site-wordmark-img" src="/images/nansikthumbnail.png" alt="Nansik Retro Kits"></a></h1>
+    <h1 class="site-wordmark"><a href="index.html">NANSIK</a></h1>
     <nav class="site-nav">
-      <a href="/">Home</a>
+      <a href="index.html">Home</a>
       <a href="about.html">About</a>
       <a href="faq.html">FAQ</a>
       <a href="cart.html" class="nav-cart">Cart (<span data-cart-count>0</span>)</a>
@@ -49,7 +49,8 @@
         <button class="kit-add" aria-label="Add Juventus 97-98 to cart"
           data-action="quick-add" data-product-id="juventus-9798">+</button>
         <img class="kit-card__img" src="images/juventus9798.JPG" alt="Juventus 97-98 jersey"
-          data-action="quick-view" data-product-id="juventus-9798">
+          data-action="view-product" data-product-name="Juventus 97-98" data-product-image="juventus9798.JPG"
+          data-product-desc="Juventus 97-98 | Price: $29.99 | Classic Retro Jersey">
       </div>
       <div class="kit-card__meta">
         <span class="kit-card__name">Juventus 97-98</span>
@@ -63,7 +64,8 @@
         <button class="kit-add" aria-label="Add KAKA AC Milan 06-07 to cart"
           data-action="quick-add" data-product-id="kaka-ac-milan-06-07">+</button>
         <img class="kit-card__img" src="images/redkappa.jpeg" alt="KAKA AC Milan 06-07 jersey"
-          data-action="quick-view" data-product-id="kaka-ac-milan-06-07">
+          data-action="view-product" data-product-name="KAKA AC Milan 06-07" data-product-image="redkappa.jpeg"
+          data-product-desc="KAKA AC Milan 06-07 | Price: $42.99 | Premium Retro Jersey">
       </div>
       <div class="kit-card__meta">
         <span class="kit-card__name">KAKA AC Milan 06-07</span>
@@ -77,7 +79,8 @@
         <button class="kit-add" aria-label="Add Juventus 97-98 Pink to cart"
           data-action="quick-add" data-product-id="juventus-pink">+</button>
         <img class="kit-card__img" src="images/juventuspink.PNG" alt="Juventus 97-98 Pink jersey"
-          data-action="quick-view" data-product-id="juventus-pink">
+          data-action="view-product" data-product-name="Juventus 97-98 Pink" data-product-image="juventuspink.PNG"
+          data-product-desc="Juventus 97-98 Pink | Price: $29.99 | Premium Retro Jersey">
       </div>
       <div class="kit-card__meta">
         <span class="kit-card__name">Juventus 97-98 Pink</span>
@@ -91,7 +94,8 @@
         <button class="kit-add" aria-label="Add Brazil 98-99 X R9 to cart"
           data-action="quick-add" data-product-id="brazil-jersey">+</button>
         <img class="kit-card__img" src="images/brazil.PNG" alt="Brazil jersey"
-          data-action="quick-view" data-product-id="brazil-jersey">
+          data-action="view-product" data-product-name="Brazil 98-99 X R9" data-product-image="brazil.PNG"
+          data-product-desc="Brazil 98-99 X R9 | Price: $34.99 | Iconic Retro Jersey">
       </div>
       <div class="kit-card__meta">
         <span class="kit-card__name">Brazil 98-99 X R9</span>
@@ -105,7 +109,8 @@
         <button class="kit-add" aria-label="Add Japan Concept Jersey to cart"
           data-action="quick-add" data-product-id="japan-jersey">+</button>
         <img class="kit-card__img" src="images/japan.PNG" alt="Japan concept jersey"
-          data-action="quick-view" data-product-id="japan-jersey">
+          data-action="view-product" data-product-name="Japan Concept Jersey" data-product-image="japan.PNG"
+          data-product-desc="Japan Concept Jersey | Price: $32.99 | Premium Retro Jersey">
       </div>
       <div class="kit-card__meta">
         <span class="kit-card__name">Japan Concept Jersey</span>
@@ -119,7 +124,8 @@
         <button class="kit-add" aria-label="Add Maradona x Argentina to cart"
           data-action="quick-add" data-product-id="maradona-jersey">+</button>
         <img class="kit-card__img" src="images/maradona.PNG" alt="Maradona jersey"
-          data-action="quick-view" data-product-id="maradona-jersey">
+          data-action="view-product" data-product-name="Maradona x Argentina" data-product-image="maradona.PNG"
+          data-product-desc="Maradona x Argentina | Price: $39.99 | Legend Retro Jersey">
       </div>
       <div class="kit-card__meta">
         <span class="kit-card__name">Maradona x Argentina</span>
@@ -133,7 +139,8 @@
         <button class="kit-add" aria-label="Add Santos Jersey to cart"
           data-action="quick-add" data-product-id="santos-jersey">+</button>
         <img class="kit-card__img" src="images/santos.PNG" alt="Santos jersey"
-          data-action="quick-view" data-product-id="santos-jersey">
+          data-action="view-product" data-product-name="Santos x Neymar JR 12-13" data-product-image="santos.PNG"
+          data-product-desc="Santos x Neymar JR 12-13 | Price: $35.99 | Classic Retro Jersey">
       </div>
       <div class="kit-card__meta">
         <span class="kit-card__name">Santos x Neymar JR 12-13</span>
@@ -142,43 +149,6 @@
     </article>
 
   </section>
-
-  <!-- Quick-view modal -->
-  <div id="quickViewModal" class="qv-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="qvName">
-    <div class="qv-panel">
-      <button id="qvClose" class="qv-close" aria-label="Close">&times;</button>
-      <div class="qv-body">
-
-        <!-- Image carousel -->
-        <div class="qv-image-wrap">
-          <img id="qvImage" class="qv-image" alt="">
-          <button id="qvPrev" class="qv-nav qv-nav--prev hidden" aria-label="Previous image">&larr;</button>
-          <button id="qvNext" class="qv-nav qv-nav--next hidden" aria-label="Next image">&rarr;</button>
-        </div>
-        <div id="qvDots" class="carousel-dots qv-dots hidden"></div>
-
-        <!-- Info -->
-        <div class="qv-info">
-          <h3 id="qvName"></h3>
-          <p id="qvPrice" class="qv-price"></p>
-
-          <div id="qvSizeChooser" class="size-chooser hidden">
-            <button class="qv-size-option size-option" data-size="S">S</button>
-            <button class="qv-size-option size-option" data-size="M">M</button>
-            <button class="qv-size-option size-option" data-size="L">L</button>
-          </div>
-
-          <p id="qvStatus" class="qv-status"></p>
-
-          <div class="qv-actions">
-            <button id="qvAddToCart" class="btn btn--solid">Add to Cart</button>
-            <button id="qvViewProduct" class="btn">Full Details</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
 
   <!-- Footer -->
   <footer class="site-footer">

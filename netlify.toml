@@ -1,4 +1,4 @@
-m[build]
+zm[build]
   functions = "netlify/functions"
   publish = "."
 
