@@ -48,6 +48,7 @@ module.exports = async (req, res) => {
       mode: "payment",
       ui_mode: "embedded",
       line_items: lineItems,
+      shipping_address_collection: { allowed_countries: ["US"] },
       return_url: `${origin}/cart?session_id={CHECKOUT_SESSION_ID}`
     });
 
