@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart - Nansik Retro Kit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="theme">
+
+  <!-- Header -->
+  <header class="site-header">
+    <span class="site-tagline">(retro football kits)</span>
+    <h1 class="site-wordmark"><a href="/">NANSIK</a></h1>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/shop">Back to Shop</a>
+      <a href="/faq">FAQ</a>
+      <span class="nav-cart">Items: <span data-cart-count>0</span></span>
+    </nav>
+  </header>
+
+  <!-- Manifesto -->
+  <section class="manifesto reveal">
+    <p><span class="lead">Your table.</span> Everything you picked, ready to go.</p>
+  </section>
+
+  <!-- Cart -->
+  <section class="cart-wrap">
+    <div id="cartContainer" class="space-y-4"></div>
+
+    <div class="cart-total">
+      <span>Total</span>
+      <span id="totalPrice">$0.00</span>
+    </div>
+
+    <div id="paymentSection" class="mt-8 hidden">
+      <div id="checkout"></div>
+      <p id="checkoutStatus" class="text-sm mt-4 text-center" style="color:var(--ink-soft)">Secure checkout by Stripe — card &amp; Apple Pay</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    © 2026 Nansik Retro Kit. All rights reserved. Website coded by GitHub: ajversaily.
+  </footer>
+
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="js/stripe-config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/theme.js"></script>
+</body>
+</html>

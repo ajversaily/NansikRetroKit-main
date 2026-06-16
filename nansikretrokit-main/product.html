@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product - Nansik Retro Kit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="theme">
+
+  <!-- Header -->
+  <header class="site-header">
+    <span class="site-tagline">(retro football kits)</span>
+    <h1 class="site-wordmark"><a href="/">NANSIK RETRO KITS</a></h1>
+    <nav class="site-nav">
+      <a href="/shop">Shop</a>
+      <a href="/about">About</a>
+      <a href="/faq">FAQ</a>
+      <a href="/cart" class="nav-cart">Cart (<span data-cart-count>0</span>)</a>
+    </nav>
+  </header>
+
+  <!-- Product layout -->
+  <section class="product-wrap">
+
+    <!-- Image carousel -->
+    <div class="product-image-col">
+      <div class="product-image-frame">
+        <img id="mainImage" alt="Product Image">
+        <button id="prevBtn" class="carousel-btn carousel-btn--prev hidden" aria-label="Previous image">&larr;</button>
+        <button id="nextBtn" class="carousel-btn carousel-btn--next hidden" aria-label="Next image">&rarr;</button>
+      </div>
+
+      <!-- Dot indicators -->
+      <div id="carouselDots" class="carousel-dots hidden"></div>
+
+      <!-- Thumbnail strip -->
+      <div id="thumbnailStrip" class="thumbnail-strip hidden"></div>
+    </div>
+
+    <!-- Info -->
+    <div class="product-info">
+      <h2 id="productName"></h2>
+      <p id="productDesc" class="desc"></p>
+
+      <button id="addToCart" class="btn btn--solid">Add to Cart</button>
+
+      <!-- Size chooser — shown after clicking Add to Cart -->
+      <div id="sizeChooser" class="size-chooser hidden" aria-hidden="true" aria-label="Select a size">
+        <button class="size-option" data-size="XS">XS</button>
+        <button class="size-option" data-size="S">S</button>
+        <button class="size-option" data-size="M">M</button>
+        <button class="size-option" data-size="L">L</button>
+        <button class="size-option" data-size="XL">XL</button>
+        <button class="size-option" data-size="XXL">XXL</button>
+      </div>
+
+      <p id="cartStatus" class="text-sm mt-3" style="min-height:1.25rem;color:var(--ink-soft)"></p>
+      <button id="goToCart" class="btn mt-4 hidden">Go to Cart</button>
+    </div>
+
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    © 2026 Nansik Retro Kit. All rights reserved. Website coded by GitHub: ajversaily.
+  </footer>
+
+  <script src="js/store.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/theme.js"></script>
+</body>
+</html>

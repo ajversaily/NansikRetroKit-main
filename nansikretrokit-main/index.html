@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nansik Retro Kit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="theme">
+
+  <!-- Header -->
+  <header class="site-header">
+    <span class="site-tagline">(retro football kits)</span>
+    <h1 class="site-wordmark"><a href="/">NANSIK RETRO KITS</a></h1>
+    <nav class="site-nav">
+      <a href="/shop">Shop</a>
+      <a href="/about">About</a>
+      <a href="/faq">FAQ</a>
+      <a href="/cart" class="nav-cart">Cart (<span id="cartCount">0</span>)</a>
+    </nav>
+  </header>
+
+  <!-- Manifesto -->
+  <section class="manifesto reveal">
+    <p>
+      <span class="lead">We create memories</span> with this beautiful sport, and those
+      memories live on with us our whole life. Be the player you want to be. It's not
+      just a jersey, it's <em>who we are</em>.
+    </p>
+  </section>
+
+  <!-- Featured products -->
+  <p class="section-label reveal">Each kit is a story. Take a look.</p>
+  <section class="kit-grid">
+
+    <!-- Product 1 -->
+    <article class="kit-card reveal">
+      <div class="kit-card__media">
+        <button class="kit-add" aria-label="View Juventus 97-98 Pink"
+          onclick="goToProduct('Juventus 97-98 Pink', 'juventuspink.PNG', 'Juventus 97-98 Pink | Price: $29.99 | Premium Retro Jersey')">+</button>
+        <img class="kit-card__img" src="images/juventuspink.PNG" alt="Juventus 97-98 Pink jersey"
+          onclick="goToProduct('Juventus 97-98 Pink', 'juventuspink.PNG', 'Juventus 97-98 Pink | Price: $29.99 | Premium Retro Jersey')">
+      </div>
+      <div class="kit-card__meta">
+        <span class="kit-card__name">Juventus 97-98 Pink</span>
+        <span class="kit-card__price">$29.99</span>
+      </div>
+    </article>
+
+    <!-- Product 3 -->
+    <article class="kit-card reveal">
+      <div class="kit-card__media">
+        <button class="kit-add" aria-label="View Brazil 98-99 X R9"
+          onclick="goToProduct('Brazil 98-99 X R9', 'brazil.PNG', 'Brazil 98-99 X R9 | Price: $34.99 | Iconic Retro Jersey')">+</button>
+        <img class="kit-card__img" src="images/brazil.PNG" alt="Brazil jersey"
+          onclick="goToProduct('Brazil 98-99 X R9', 'brazil.PNG', 'Brazil 98-99 X R9 | Price: $34.99 | Iconic Retro Jersey')">
+      </div>
+      <div class="kit-card__meta">
+        <span class="kit-card__name">Brazil 98-99 X R9</span>
+        <span class="kit-card__price">$34.99</span>
+      </div>
+    </article>
+
+    <!-- Product 4 -->
+    <article class="kit-card reveal">
+      <div class="kit-card__media">
+        <button class="kit-add" aria-label="View Japan Concept Jersey"
+          onclick="goToProduct('Japan Concept Jersey', 'japan.PNG', 'Japan Concept Jersey | Price: $32.99 | Premium Retro Jersey')">+</button>
+        <img class="kit-card__img" src="images/japan.PNG" alt="Japan jersey"
+          onclick="goToProduct('Japan Concept Jersey', 'japan.PNG', 'Japan Concept Jersey | Price: $32.99 | Premium Retro Jersey')">
+      </div>
+      <div class="kit-card__meta">
+        <span class="kit-card__name">Japan Concept Jersey</span>
+        <span class="kit-card__price">$32.99</span>
+      </div>
+    </article>
+
+    <!-- Product 5 -->
+    <article class="kit-card reveal">
+      <div class="kit-card__media">
+        <button class="kit-add" aria-label="View Maradona x Argentina"
+          onclick="goToProduct('Maradona x Argentina', 'maradona.PNG', 'Maradona x Argentina | Price: $39.99 | Legend Retro Jersey')">+</button>
+        <img class="kit-card__img" src="images/maradona.PNG" alt="Maradona jersey"
+          onclick="goToProduct('Maradona x Argentina', 'maradona.PNG', 'Maradona x Argentina | Price: $39.99 | Legend Retro Jersey')">
+      </div>
+      <div class="kit-card__meta">
+        <span class="kit-card__name">Maradona x Argentina</span>
+        <span class="kit-card__price">$39.99</span>
+      </div>
+    </article>
+
+    <!-- Product 6 -->
+    <article class="kit-card reveal">
+      <div class="kit-card__media">
+        <button class="kit-add" aria-label="View Santos Jersey"
+          onclick="goToProduct('Santos x Neymar JR 12-13', 'santos.PNG', 'Santos x Neymar JR 12-13 | Price: $35.99 | Classic Retro Jersey')">+</button>
+        <img class="kit-card__img" src="images/santos.PNG" alt="Santos jersey"
+          onclick="goToProduct('Santos x Neymar JR 12-13', 'santos.PNG', 'Santos x Neymar JR 12-13 | Price: $35.99 | Classic Retro Jersey')">
+      </div>
+      <div class="kit-card__meta">
+        <span class="kit-card__name">Santos x Neymar JR 12-13</span>
+        <span class="kit-card__price">$35.99</span>
+      </div>
+    </article>
+
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-band reveal">
+    <h3>Complete your collection</h3>
+    <p>Browse every retro kit and find the one that feels like home.</p>
+    <button class="btn btn--solid" onclick="window.location.href='/shop'">Shop all</button>
+  </section>
+  <footer class="site-footer">
+    © 2026 Nansik Retro Kit. All rights reserved. Website coded by GitHub: ajversaily.
+    <svg class="footer-wave-art" viewBox="0 0 1200 64" preserveAspectRatio="none"
+         fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+         vector-effect="non-scaling-stroke" aria-hidden="true">
+      <path class="wave-back" vector-effect="non-scaling-stroke"
+            d="M0 46 Q 60 22 120 46 T 240 46 T 360 46 T 480 46 T 600 46 T 720 46 T 840 46 T 960 46 T 1080 46 T 1200 46" />
+      <path vector-effect="non-scaling-stroke"
+            d="M0 38 Q 60 14 120 38 T 240 38 T 360 38 T 480 38 T 600 38 T 720 38 T 840 38 T 960 38 T 1080 38 T 1200 38" />
+    </svg>
+  </footer>
+
+  <script src="js/store.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/theme.js"></script>
+</body>
+</html>

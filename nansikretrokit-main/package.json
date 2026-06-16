@@ -1,0 +1,9 @@
+{
+  "name": "nansik-retro-kit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Nansik Retro Kit storefront with an embedded Stripe Checkout (card + Apple Pay), hosted on Netlify.",
+  "dependencies": {
+    "stripe": "^17.7.0"
+  }
+}
