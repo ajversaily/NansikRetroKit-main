@@ -94,6 +94,11 @@ a { color: inherit; }
 }
 .site-wordmark a { color: inherit; text-decoration: none; }
 .site-wordmark a:hover { opacity: 0.9; }
+.site-wordmark-img {
+  height: 44px;
+  width: auto;
+  display: block;
+}
 .product-info label {
   display: block;
   margin: 1.3rem 0 0.5rem;
