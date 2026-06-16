@@ -11,7 +11,7 @@ const PRODUCTS = {
     id: "kaka-ac-milan-06-07",
     name: "KAKA AC Milan 06-07",
     image: "images/redkappa.jpeg",
-    images: ["images/redkappa.jpeg"],
+    images: ["images/redkappa.jpeg", "images/kakafront.jpg"],
     price: 42.99,
     description: "Premium Retro Jersey"
   },
@@ -19,7 +19,7 @@ const PRODUCTS = {
     id: "juventus-pink",
     name: "Juventus 97-98 Pink",
     image: "images/juventuspink.PNG",
-    images: ["images/juventuspink.PNG"],
+    images: ["images/juventuspink.PNG", "images/kappamenspinkteeitaly.jpg", "images/pinkitaly.jpeg"],
     price: 29.99,
     description: "Premium Retro Jersey"
   },
@@ -27,7 +27,7 @@ const PRODUCTS = {
     id: "brazil-jersey",
     name: "Brazil 98-99 X R9",
     image: "images/brazil.PNG",
-    images: ["images/brazil.PNG"],
+    images: ["images/brazil.PNG", "images/ronaldobrazilfront.jpg", "images/brazilronaldbrazil.jpg"],
     price: 34.99,
     description: "Iconic Retro Jersey"
   },
@@ -43,7 +43,7 @@ const PRODUCTS = {
     id: "maradona-jersey",
     name: "Maradona x Argentina",
     image: "images/maradona.PNG",
-    images: ["images/maradona.PNG"],
+    images: ["images/maradona.PNG", "images/maradonafront.jpg", "images/maradonaback.jpg"],
     price: 39.99,
     description: "Legend Retro Jersey"
   },
@@ -51,7 +51,7 @@ const PRODUCTS = {
     id: "santos-jersey",
     name: "Santos x Neymar JR 12-13",
     image: "images/santos.PNG",
-    images: ["images/santos.PNG"],
+    images: ["images/santos.PNG", "images/neymarbmgfront.jpg", "images/neymarbmgback.jpg"],
     price: 35.99,
     description: "Classic Retro Jersey"
   }
