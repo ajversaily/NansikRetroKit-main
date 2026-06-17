@@ -55,7 +55,7 @@ module.exports = async (req, res) => {
       .select()
       .single();
 
-    if (error) return res.status(500).json({ error: "Could not save product." });
+    if (error) return res.status(500).json({ error: error.message || "Could not save product." });
     return res.status(200).json(data);
   }
 

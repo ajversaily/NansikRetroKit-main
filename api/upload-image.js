@@ -1,5 +1,4 @@
-// Returns a signed upload URL so the browser can PUT the image directly to Supabase Storage.
-// This avoids multipart parsing on the server entirely.
+// Receives the image as base64 JSON, decodes it, and uploads directly to Supabase Storage.
 const { createClient } = require("@supabase/supabase-js");
 
 module.exports = async (req, res) => {
@@ -14,42 +13,39 @@ module.exports = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized." });
   }
 
-  // Vercel doesn't always pre-parse the body — read and parse it manually
-  let parsedBody = req.body || {};
-  if (!parsedBody.fileName) {
+  // Read and parse body manually (Vercel doesn't always pre-parse)
+  let body = req.body || {};
+  if (!body.base64) {
     try {
       const chunks = [];
       for await (const chunk of req) chunks.push(chunk);
-      parsedBody = JSON.parse(Buffer.concat(chunks).toString());
+      body = JSON.parse(Buffer.concat(chunks).toString());
     } catch (_) {}
   }
-  const { fileName, fileType } = parsedBody;
-  if (!fileName || !fileType) {
-    return res.status(400).json({ error: "fileName and fileType are required." });
+
+  const { base64, fileType, fileName } = body;
+  if (!base64 || !fileType) {
+    return res.status(400).json({ error: "base64 and fileType are required." });
   }
+
+  // Strip the data URL prefix if present (e.g. "data:image/jpeg;base64,...")
+  const raw = base64.includes(",") ? base64.split(",")[1] : base64;
+  const fileBuffer = Buffer.from(raw, "base64");
+
+  const ext = (fileType.split("/")[1] || "jpg").replace(/[^a-z0-9]/g, "").toLowerCase() || "jpg";
+  const path = `product-${Date.now()}.${ext}`;
 
   const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_KEY
   );
 
-  // Use a clean timestamp + extension only — avoids any Supabase path validation issues
-  const ext = (fileName.split(".").pop() || "jpg").replace(/[^a-z0-9]/gi, "").toLowerCase() || "jpg";
-  const path = `product-${Date.now()}.${ext}`;
-
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from("product-images")
-    .createSignedUploadUrl(path);
+    .upload(path, fileBuffer, { contentType: fileType, upsert: false });
 
-  if (error) return res.status(500).json({ error: "Could not create upload URL: " + error.message });
+  if (error) return res.status(500).json({ error: "Upload failed: " + error.message });
 
-  // Also return the public URL so the browser knows where the image will live
-  const { data: pub } = supabase.storage.from("product-images").getPublicUrl(path);
-
-  return res.status(200).json({
-    signedUrl: data.signedUrl,
-    publicUrl: pub.publicUrl,
-    token: data.token,
-    path
-  });
+  const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+  return res.status(200).json({ url: data.publicUrl });
 };

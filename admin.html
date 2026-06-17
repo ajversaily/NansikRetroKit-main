@@ -373,39 +373,30 @@
         bar.style.width = pct + "%";
       }, 120);
 
-      // Step 1 — ask the server for a signed upload URL
-      const initRes = await fetch("/api/upload-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-password": currentPassword },
-        body: JSON.stringify({ fileName: file.name, fileType: file.type })
+      // Read file as base64 and send as JSON — most reliable across all Vercel setups
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
 
-      if (!initRes.ok) {
-        clearInterval(ticker);
-        const err = await initRes.json().catch(() => ({}));
-        showFormMsg(err.error || "Upload failed.", "red");
-        resetDropZone();
-        return;
-      }
-
-      const { signedUrl, publicUrl } = await initRes.json();
-
-      // Step 2 — PUT the file directly to Supabase Storage using the signed URL
-      const uploadRes = await fetch(signedUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file
+      const uploadRes = await fetch("/api/upload-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": currentPassword },
+        body: JSON.stringify({ base64, fileType: file.type, fileName: file.name })
       });
 
       clearInterval(ticker);
 
       if (!uploadRes.ok) {
-        showFormMsg("Upload failed. Check Supabase bucket permissions.", "red");
+        const err = await uploadRes.json().catch(() => ({}));
+        showFormMsg(err.error || "Upload failed.", "red");
         resetDropZone();
         return;
       }
 
-      const url = publicUrl;
+      const { url } = await uploadRes.json();
       bar.style.width = "100%";
 
       setTimeout(() => {
