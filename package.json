@@ -4,6 +4,7 @@
   "private": true,
   "description": "Nansik Retro Kit storefront with an embedded Stripe Checkout (card + Apple Pay), hosted on Vercel.",
   "dependencies": {
-    "stripe": "^17.7.0"
+    "stripe": "^17.7.0",
+    "@supabase/supabase-js": "^2.49.4"
   }
 }

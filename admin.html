@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nansik Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #111; color: #f5f5f5; font-family: 'Courier New', monospace; }
+    .card { background: #1a1a1a; border: 1px solid #333; }
+    input, textarea, select { background: #222; border: 1px solid #444; color: #f5f5f5; }
+    input:focus, textarea:focus { outline: none; border-color: #888; }
+    .btn-primary { background: #f5f5f5; color: #111; font-weight: 700; }
+    .btn-primary:hover { background: #ddd; }
+    .btn-danger { background: #c0392b; color: #fff; }
+    .btn-danger:hover { background: #e74c3c; }
+    .btn-edit { background: #2c3e50; color: #fff; }
+    .btn-edit:hover { background: #34495e; }
+    #loginScreen { display: flex; }
+    #adminPanel { display: none; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Login Screen -->
+  <div id="loginScreen" class="min-h-screen items-center justify-center">
+    <div class="card rounded-xl p-10 w-full max-w-sm text-center">
+      <h1 class="text-2xl font-bold mb-1 tracking-widest uppercase">NANSIK</h1>
+      <p class="text-gray-500 text-sm mb-8">Admin Portal</p>
+      <input
+        id="passwordInput"
+        type="password"
+        placeholder="Enter password"
+        class="w-full px-4 py-3 rounded mb-4 text-center tracking-widest"
+        onkeydown="if(event.key==='Enter') login()"
+      />
+      <button onclick="login()" class="btn-primary w-full py-3 rounded uppercase tracking-widest text-sm">
+        Enter
+      </button>
+      <p id="loginError" class="text-red-400 text-sm mt-4 hidden">Wrong password.</p>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="adminPanel" class="max-w-5xl mx-auto px-6 py-10">
+
+    <div class="flex items-center justify-between mb-10">
+      <div>
+        <h1 class="text-3xl font-bold tracking-widest uppercase">NANSIK Admin</h1>
+        <p class="text-gray-500 text-sm mt-1">Manage your products</p>
+      </div>
+      <button onclick="logout()" class="text-gray-500 hover:text-white text-sm underline">Logout</button>
+    </div>
+
+    <!-- Add / Edit Product Form -->
+    <div class="card rounded-xl p-8 mb-10">
+      <h2 id="formTitle" class="text-lg font-bold uppercase tracking-widest mb-6">Add New Product</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Product ID <span class="text-red-400">*</span></label>
+          <input id="f_id" type="text" placeholder="e.g. brazil-jersey" class="w-full px-4 py-2 rounded text-sm" />
+          <p class="text-xs text-gray-600 mt-1">Lowercase letters and hyphens only. Cannot change after saving.</p>
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Product Name <span class="text-red-400">*</span></label>
+          <input id="f_name" type="text" placeholder="e.g. Brazil 98-99 X R9" class="w-full px-4 py-2 rounded text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Price (USD) <span class="text-red-400">*</span></label>
+          <input id="f_price" type="number" step="0.01" min="0" placeholder="e.g. 34.99" class="w-full px-4 py-2 rounded text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Description</label>
+          <input id="f_description" type="text" placeholder="e.g. Iconic Retro Jersey" class="w-full px-4 py-2 rounded text-sm" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Main Image URL</label>
+          <input id="f_image" type="text" placeholder="https://... or images/filename.jpg" class="w-full px-4 py-2 rounded text-sm" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Extra Image URLs <span class="text-gray-600">(one per line)</span></label>
+          <textarea id="f_images" rows="3" placeholder="https://image1.jpg&#10;https://image2.jpg" class="w-full px-4 py-2 rounded text-sm resize-none"></textarea>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-6">
+        <button onclick="saveProduct()" class="btn-primary px-8 py-3 rounded uppercase tracking-widest text-sm">
+          Save Product
+        </button>
+        <button id="cancelEditBtn" onclick="cancelEdit()" class="hidden text-gray-500 hover:text-white text-sm underline self-center">
+          Cancel edit
+        </button>
+      </div>
+      <p id="formMsg" class="text-sm mt-4 hidden"></p>
+    </div>
+
+    <!-- Product List -->
+    <div>
+      <h2 class="text-lg font-bold uppercase tracking-widest mb-4">All Products</h2>
+      <p id="listMsg" class="text-gray-500 text-sm mb-4"></p>
+      <div id="productList" class="space-y-3"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const ADMIN_PASS_KEY = "nansik_admin_pass";
+    let currentPassword = "";
+    let editingId = null;
+
+    // ── Auth ────────────────────────────────────────────────────────────────────
+
+    function login() {
+      const val = document.getElementById("passwordInput").value.trim();
+      if (!val) return;
+      // Verify against the server
+      fetch("/api/admin-products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": val },
+        body: JSON.stringify({ id: "__ping__", name: "__ping__", price: 0 })
+      }).then(async r => {
+        if (r.status === 401) {
+          document.getElementById("loginError").classList.remove("hidden");
+          return;
+        }
+        // 400 = wrong body but auth passed — that's fine for a ping
+        currentPassword = val;
+        sessionStorage.setItem(ADMIN_PASS_KEY, val);
+        showPanel();
+        loadProducts();
+      }).catch(() => {
+        document.getElementById("loginError").classList.remove("hidden");
+      });
+    }
+
+    function logout() {
+      sessionStorage.removeItem(ADMIN_PASS_KEY);
+      currentPassword = "";
+      document.getElementById("adminPanel").style.display = "none";
+      document.getElementById("loginScreen").style.display = "flex";
+      document.getElementById("passwordInput").value = "";
+    }
+
+    function showPanel() {
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("adminPanel").style.display = "block";
+    }
+
+    // Auto-login if session still active
+    window.addEventListener("DOMContentLoaded", () => {
+      const saved = sessionStorage.getItem(ADMIN_PASS_KEY);
+      if (saved) {
+        currentPassword = saved;
+        showPanel();
+        loadProducts();
+      }
+    });
+
+    // ── Load Products ───────────────────────────────────────────────────────────
+
+    async function loadProducts() {
+      document.getElementById("listMsg").textContent = "Loading...";
+      document.getElementById("productList").innerHTML = "";
+
+      const res = await fetch("/api/products");
+      if (!res.ok) {
+        document.getElementById("listMsg").textContent = "Could not load products.";
+        return;
+      }
+
+      const products = await res.json();
+      document.getElementById("listMsg").textContent = "";
+
+      if (!products.length) {
+        document.getElementById("listMsg").textContent = "No products yet. Add your first one above.";
+        return;
+      }
+
+      const list = document.getElementById("productList");
+      products.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "card rounded-xl p-5 flex items-center gap-5";
+        card.innerHTML = `
+          ${p.image ? `<img src="${escHtml(p.image)}" alt="${escHtml(p.name)}" class="w-16 h-16 object-cover rounded flex-shrink-0" onerror="this.style.display='none'">` : '<div class="w-16 h-16 bg-gray-800 rounded flex-shrink-0"></div>'}
+          <div class="flex-1 min-w-0">
+            <p class="font-bold truncate">${escHtml(p.name)}</p>
+            <p class="text-sm text-gray-400">$${Number(p.price).toFixed(2)} · <span class="font-mono text-xs">${escHtml(p.id)}</span></p>
+            <p class="text-xs text-gray-600 truncate">${escHtml(p.description || "")}</p>
+          </div>
+          <div class="flex gap-2 flex-shrink-0">
+            <button onclick='editProduct(${JSON.stringify(p)})' class="btn-edit px-4 py-2 rounded text-xs uppercase tracking-wider">Edit</button>
+            <button onclick="deleteProduct('${escHtml(p.id)}', '${escHtml(p.name)}')" class="btn-danger px-4 py-2 rounded text-xs uppercase tracking-wider">Delete</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    // ── Save ────────────────────────────────────────────────────────────────────
+
+    async function saveProduct() {
+      const id       = document.getElementById("f_id").value.trim();
+      const name     = document.getElementById("f_name").value.trim();
+      const price    = document.getElementById("f_price").value.trim();
+      const desc     = document.getElementById("f_description").value.trim();
+      const image    = document.getElementById("f_image").value.trim();
+      const extraRaw = document.getElementById("f_images").value.trim();
+
+      if (!id || !name || !price) {
+        showFormMsg("ID, name, and price are required.", "red");
+        return;
+      }
+      if (!/^[a-z0-9-]+$/.test(id)) {
+        showFormMsg("ID must be lowercase letters, numbers, and hyphens only.", "red");
+        return;
+      }
+
+      const images = [image, ...extraRaw.split("\n").map(s => s.trim())].filter(Boolean);
+
+      const res = await fetch("/api/admin-products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": currentPassword },
+        body: JSON.stringify({ id, name, price, description: desc, image, images })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showFormMsg(err.error || "Could not save product.", "red");
+        return;
+      }
+
+      showFormMsg("Product saved!", "green");
+      clearForm();
+      loadProducts();
+    }
+
+    // ── Delete ──────────────────────────────────────────────────────────────────
+
+    async function deleteProduct(id, name) {
+      if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+
+      const res = await fetch("/api/admin-products", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", "x-admin-password": currentPassword },
+        body: JSON.stringify({ id })
+      });
+
+      if (!res.ok) {
+        alert("Could not delete product.");
+        return;
+      }
+      loadProducts();
+    }
+
+    // ── Edit helpers ─────────────────────────────────────────────────────────────
+
+    function editProduct(p) {
+      editingId = p.id;
+      document.getElementById("f_id").value = p.id;
+      document.getElementById("f_id").disabled = true;
+      document.getElementById("f_name").value = p.name;
+      document.getElementById("f_price").value = p.price;
+      document.getElementById("f_description").value = p.description || "";
+      document.getElementById("f_image").value = p.image || "";
+      const extras = (p.images || []).filter(img => img !== p.image);
+      document.getElementById("f_images").value = extras.join("\n");
+      document.getElementById("formTitle").textContent = "Edit Product";
+      document.getElementById("cancelEditBtn").classList.remove("hidden");
+      document.getElementById("formMsg").classList.add("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function cancelEdit() {
+      clearForm();
+    }
+
+    function clearForm() {
+      editingId = null;
+      ["f_id", "f_name", "f_price", "f_description", "f_image", "f_images"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+      document.getElementById("f_id").disabled = false;
+      document.getElementById("formTitle").textContent = "Add New Product";
+      document.getElementById("cancelEditBtn").classList.add("hidden");
+    }
+
+    // ── Utilities ────────────────────────────────────────────────────────────────
+
+    function showFormMsg(msg, color) {
+      const el = document.getElementById("formMsg");
+      el.textContent = msg;
+      el.className = `text-sm mt-4 text-${color}-400`;
+      el.classList.remove("hidden");
+      setTimeout(() => el.classList.add("hidden"), 4000);
+    }
+
+    function escHtml(str) {
+      return String(str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+  </script>
+
+</body>
+</html>

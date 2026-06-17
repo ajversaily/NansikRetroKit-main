@@ -1,4 +1,5 @@
-const PRODUCTS = {
+// Fallback products used if Supabase is unreachable
+const PRODUCTS_FALLBACK = {
   "juventus-9798": {
     id: "juventus-9798",
     name: "Juventus 97-98",
@@ -56,6 +57,29 @@ const PRODUCTS = {
     description: "Classic Retro Jersey"
   }
 };
+
+// Live products loaded from Supabase via /api/products
+let PRODUCTS = { ...PRODUCTS_FALLBACK };
+
+(async function loadLiveProducts() {
+  try {
+    const res = await fetch("/api/products");
+    if (!res.ok) return;
+    const list = await res.json();
+    if (!Array.isArray(list) || list.length === 0) return;
+
+    // Replace PRODUCTS with live data from Supabase
+    PRODUCTS = {};
+    list.forEach(p => { PRODUCTS[p.id] = p; });
+
+    // Re-render any page that called renderProducts() before data arrived
+    if (typeof window.__onProductsLoaded === "function") {
+      window.__onProductsLoaded(PRODUCTS);
+    }
+  } catch (_) {
+    // Network failed — fallback already in place
+  }
+})();
 
 const imageFixes = {
   "IMG_3076.jpeg": "images/redkappa.jpeg",
