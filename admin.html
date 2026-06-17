@@ -364,8 +364,11 @@
         headers: { "x-admin-password": currentPassword }
       });
       if (!res.ok) throw new Error("Could not get upload config.");
-      const { supabaseUrl, supabaseAnonKey } = await res.json();
-      _supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+      const cfg = await res.json();
+      if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) {
+        throw new Error("Missing Supabase config — check SUPABASE_URL and SUPABASE_ANON_KEY are set in Vercel environment variables.");
+      }
+      _supabaseClient = supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
       return _supabaseClient;
     }
 
