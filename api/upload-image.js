@@ -33,9 +33,9 @@ module.exports = async (req, res) => {
     process.env.SUPABASE_SERVICE_KEY
   );
 
-  // Sanitise the filename before using it as a storage path
-  const safe = fileName.replace(/[^a-zA-Z0-9.\-_]/g, "-");
-  const path = `${Date.now()}-${safe}`;
+  // Use a clean timestamp + extension only — avoids any Supabase path validation issues
+  const ext = (fileName.split(".").pop() || "jpg").replace(/[^a-z0-9]/gi, "").toLowerCase() || "jpg";
+  const path = `product-${Date.now()}.${ext}`;
 
   const { data, error } = await supabase.storage
     .from("product-images")
