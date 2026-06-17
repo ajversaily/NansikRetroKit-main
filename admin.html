@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nansik Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
     body { background: #111; color: #f5f5f5; font-family: 'Courier New', monospace; }
     .card { background: #1a1a1a; border: 1px solid #333; }
@@ -163,6 +164,7 @@
     function logout() {
       sessionStorage.removeItem(ADMIN_PASS_KEY);
       currentPassword = "";
+      _supabaseClient = null;
       document.getElementById("adminPanel").style.display = "none";
       document.getElementById("loginScreen").style.display = "flex";
       document.getElementById("passwordInput").value = "";
@@ -350,13 +352,26 @@
       if (file) uploadFile(file);
     }
 
+    let _supabaseClient = null;
+
+    async function getSupabaseClient() {
+      if (_supabaseClient) return _supabaseClient;
+      const res = await fetch("/api/upload-image", {
+        headers: { "x-admin-password": currentPassword }
+      });
+      if (!res.ok) throw new Error("Could not get upload config.");
+      const { supabaseUrl, supabaseAnonKey } = await res.json();
+      _supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+      return _supabaseClient;
+    }
+
     async function uploadFile(file) {
       if (!file.type.startsWith("image/")) {
         showFormMsg("Please select an image file.", "red");
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        showFormMsg("Image must be under 5 MB.", "red");
+      if (file.size > 10 * 1024 * 1024) {
+        showFormMsg("Image must be under 10 MB.", "red");
         return;
       }
 
@@ -373,30 +388,30 @@
         bar.style.width = pct + "%";
       }, 120);
 
-      // Read file as base64 and send as JSON — most reliable across all Vercel setups
-      const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const uploadRes = await fetch("/api/upload-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-password": currentPassword },
-        body: JSON.stringify({ base64, fileType: file.type, fileName: file.name })
-      });
-
-      clearInterval(ticker);
-
-      if (!uploadRes.ok) {
-        const err = await uploadRes.json().catch(() => ({}));
-        showFormMsg(err.error || "Upload failed.", "red");
+      let sb, url;
+      try {
+        sb = await getSupabaseClient();
+      } catch (e) {
+        clearInterval(ticker);
+        showFormMsg(e.message || "Upload setup failed.", "red");
         resetDropZone();
         return;
       }
 
-      const { url } = await uploadRes.json();
+      const ext = file.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const path = `product-${Date.now()}.${ext}`;
+
+      const { error } = await sb.storage.from("product-images").upload(path, file, { contentType: file.type, upsert: false });
+      clearInterval(ticker);
+
+      if (error) {
+        showFormMsg("Upload failed: " + error.message, "red");
+        resetDropZone();
+        return;
+      }
+
+      const { data } = sb.storage.from("product-images").getPublicUrl(path);
+      url = data.publicUrl;
       bar.style.width = "100%";
 
       setTimeout(() => {
