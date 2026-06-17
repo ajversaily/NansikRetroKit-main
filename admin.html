@@ -414,6 +414,7 @@
         method: "POST",
         headers: {
           "Authorization": `Bearer ${cfg.supabaseAnonKey}`,
+          "apikey": cfg.supabaseAnonKey,
           "Content-Type": file.type,
           "x-upsert": "false"
         },
