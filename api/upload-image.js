@@ -14,7 +14,16 @@ module.exports = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized." });
   }
 
-  const { fileName, fileType } = req.body || {};
+  // Vercel doesn't always pre-parse the body — read and parse it manually
+  let parsedBody = req.body || {};
+  if (!parsedBody.fileName) {
+    try {
+      const chunks = [];
+      for await (const chunk of req) chunks.push(chunk);
+      parsedBody = JSON.parse(Buffer.concat(chunks).toString());
+    } catch (_) {}
+  }
+  const { fileName, fileType } = parsedBody;
   if (!fileName || !fileType) {
     return res.status(400).json({ error: "fileName and fileType are required." });
   }
