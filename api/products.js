@@ -19,7 +19,7 @@ module.exports = async (req, res) => {
     .order("created_at", { ascending: true });
 
   if (error) {
-    return res.status(500).json({ error: "Could not load products." });
+    return res.status(500).json({ error: error.message, code: error.code, details: error.details });
   }
 
   return res.status(200).json(data);

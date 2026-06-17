@@ -198,6 +198,10 @@
       }
 
       const products = await res.json();
+      if (!Array.isArray(products)) {
+        document.getElementById("listMsg").textContent = "Error: " + (products.error || JSON.stringify(products));
+        return;
+      }
       document.getElementById("listMsg").textContent = "";
 
       if (!products.length) {
@@ -405,7 +409,7 @@
       clearInterval(ticker);
 
       if (error) {
-        showFormMsg("Upload failed: " + error.message, "red");
+        showFormMsg("Upload failed: " + error.message + " | " + (error.error || "") + " | status: " + (error.statusCode || ""), "red");
         resetDropZone();
         return;
       }
