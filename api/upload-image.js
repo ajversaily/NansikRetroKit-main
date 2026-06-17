@@ -1,12 +1,10 @@
-// Protected endpoint — uploads an image to Supabase Storage, returns the public URL
+// Returns a signed upload URL so the browser can PUT the image directly to Supabase Storage.
+// This avoids multipart parsing on the server entirely.
 const { createClient } = require("@supabase/supabase-js");
-
-// Vercel parses multipart/form-data automatically when bodyParser is off
-export const config = { api: { bodyParser: false } };
 
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Headers", "x-admin-password");
+  res.setHeader("Access-Control-Allow-Headers", "x-admin-password, content-type");
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
@@ -16,58 +14,33 @@ module.exports = async (req, res) => {
     return res.status(401).json({ error: "Unauthorized." });
   }
 
-  try {
-    // Read raw body chunks
-    const chunks = [];
-    for await (const chunk of req) chunks.push(chunk);
-    const rawBody = Buffer.concat(chunks);
-
-    // Parse the multipart boundary from Content-Type header
-    const contentType = req.headers["content-type"] || "";
-    const boundaryMatch = contentType.match(/boundary=(.+)/);
-    if (!boundaryMatch) return res.status(400).json({ error: "Missing multipart boundary." });
-    const boundary = "--" + boundaryMatch[1];
-
-    // Split body into parts by boundary
-    const parts = rawBody.toString("binary").split(boundary);
-    let fileBuffer = null;
-    let fileName = "upload.jpg";
-    let mimeType = "image/jpeg";
-
-    for (const part of parts) {
-      if (!part.includes('filename=')) continue;
-      const nameMatch = part.match(/filename="([^"]+)"/);
-      const typeMatch = part.match(/Content-Type:\s*([^\r\n]+)/);
-      if (nameMatch) fileName = nameMatch[1];
-      if (typeMatch) mimeType = typeMatch[1].trim();
-
-      // File data starts after the double CRLF following headers
-      const headerEnd = part.indexOf("\r\n\r\n");
-      if (headerEnd === -1) continue;
-      const fileData = part.slice(headerEnd + 4, part.lastIndexOf("\r\n"));
-      fileBuffer = Buffer.from(fileData, "binary");
-      break;
-    }
-
-    if (!fileBuffer) return res.status(400).json({ error: "No file found in request." });
-
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_KEY
-    );
-
-    // Upload to the "product-images" bucket
-    const path = `${Date.now()}-${fileName.replace(/\s+/g, "-")}`;
-    const { error: uploadError } = await supabase.storage
-      .from("product-images")
-      .upload(path, fileBuffer, { contentType: mimeType, upsert: false });
-
-    if (uploadError) return res.status(500).json({ error: "Upload failed: " + uploadError.message });
-
-    const { data } = supabase.storage.from("product-images").getPublicUrl(path);
-
-    return res.status(200).json({ url: data.publicUrl });
-  } catch (err) {
-    return res.status(500).json({ error: "Server error during upload." });
+  const { fileName, fileType } = req.body || {};
+  if (!fileName || !fileType) {
+    return res.status(400).json({ error: "fileName and fileType are required." });
   }
+
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_KEY
+  );
+
+  // Sanitise the filename before using it as a storage path
+  const safe = fileName.replace(/[^a-zA-Z0-9.\-_]/g, "-");
+  const path = `${Date.now()}-${safe}`;
+
+  const { data, error } = await supabase.storage
+    .from("product-images")
+    .createSignedUploadUrl(path);
+
+  if (error) return res.status(500).json({ error: "Could not create upload URL: " + error.message });
+
+  // Also return the public URL so the browser knows where the image will live
+  const { data: pub } = supabase.storage.from("product-images").getPublicUrl(path);
+
+  return res.status(200).json({
+    signedUrl: data.signedUrl,
+    publicUrl: pub.publicUrl,
+    token: data.token,
+    path
+  });
 };

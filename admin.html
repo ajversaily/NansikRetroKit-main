@@ -215,6 +215,7 @@
             <p class="text-xs text-gray-600 truncate">${escHtml(p.description || "")}</p>
           </div>
           <div class="flex gap-2 flex-shrink-0">
+            <a href="/product.html?id=${escHtml(p.id)}" target="_blank" class="btn-edit px-4 py-2 rounded text-xs uppercase tracking-wider flex items-center gap-1" style="text-decoration:none;">View ↗</a>
             <button onclick='editProduct(${JSON.stringify(p)})' class="btn-edit px-4 py-2 rounded text-xs uppercase tracking-wider">Edit</button>
             <button onclick="deleteProduct('${escHtml(p.id)}', '${escHtml(p.name)}')" class="btn-danger px-4 py-2 rounded text-xs uppercase tracking-wider">Delete</button>
           </div>
@@ -366,32 +367,45 @@
       progress.classList.remove("hidden");
       zone.classList.remove("uploaded");
 
-      // Animate the bar to show activity
       let pct = 0;
       const ticker = setInterval(() => {
         pct = Math.min(pct + 8, 85);
         bar.style.width = pct + "%";
       }, 120);
 
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/upload-image", {
+      // Step 1 — ask the server for a signed upload URL
+      const initRes = await fetch("/api/upload-image", {
         method: "POST",
-        headers: { "x-admin-password": currentPassword },
-        body: formData
+        headers: { "Content-Type": "application/json", "x-admin-password": currentPassword },
+        body: JSON.stringify({ fileName: file.name, fileType: file.type })
       });
 
-      clearInterval(ticker);
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
+      if (!initRes.ok) {
+        clearInterval(ticker);
+        const err = await initRes.json().catch(() => ({}));
         showFormMsg(err.error || "Upload failed.", "red");
         resetDropZone();
         return;
       }
 
-      const { url } = await res.json();
+      const { signedUrl, publicUrl } = await initRes.json();
+
+      // Step 2 — PUT the file directly to Supabase Storage using the signed URL
+      const uploadRes = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file
+      });
+
+      clearInterval(ticker);
+
+      if (!uploadRes.ok) {
+        showFormMsg("Upload failed. Check Supabase bucket permissions.", "red");
+        resetDropZone();
+        return;
+      }
+
+      const url = publicUrl;
       bar.style.width = "100%";
 
       setTimeout(() => {
