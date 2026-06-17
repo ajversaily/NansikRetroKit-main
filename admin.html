@@ -164,7 +164,7 @@
     function logout() {
       sessionStorage.removeItem(ADMIN_PASS_KEY);
       currentPassword = "";
-      _supabaseClient = null;
+      _uploadConfig = null;
       document.getElementById("adminPanel").style.display = "none";
       document.getElementById("loginScreen").style.display = "flex";
       document.getElementById("passwordInput").value = "";
@@ -356,20 +356,20 @@
       if (file) uploadFile(file);
     }
 
-    let _supabaseClient = null;
+    let _uploadConfig = null;
 
-    async function getSupabaseClient() {
-      if (_supabaseClient) return _supabaseClient;
+    async function getUploadConfig() {
+      if (_uploadConfig) return _uploadConfig;
       const res = await fetch("/api/upload-image", {
         headers: { "x-admin-password": currentPassword }
       });
       if (!res.ok) throw new Error("Could not get upload config.");
       const cfg = await res.json();
       if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) {
-        throw new Error("Missing Supabase config — check SUPABASE_URL and SUPABASE_ANON_KEY are set in Vercel environment variables.");
+        throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY in Vercel env vars.");
       }
-      _supabaseClient = supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
-      return _supabaseClient;
+      _uploadConfig = cfg;
+      return _uploadConfig;
     }
 
     async function uploadFile(file) {
@@ -395,30 +395,41 @@
         bar.style.width = pct + "%";
       }, 120);
 
-      let sb, url;
+      let cfg;
       try {
-        sb = await getSupabaseClient();
+        cfg = await getUploadConfig();
       } catch (e) {
         clearInterval(ticker);
-        showFormMsg(e.message || "Upload setup failed.", "red");
+        showFormMsg(e.message, "red");
         resetDropZone();
         return;
       }
 
       const ext = file.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
       const path = `product-${Date.now()}.${ext}`;
+      const bucket = "productimages";
 
-      const { error } = await sb.storage.from("productimages").upload(path, file, { contentType: file.type, upsert: false });
+      // Upload directly to Supabase Storage REST API — no JS client involved
+      const uploadRes = await fetch(`${cfg.supabaseUrl}/storage/v1/object/${bucket}/${path}`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${cfg.supabaseAnonKey}`,
+          "Content-Type": file.type,
+          "x-upsert": "false"
+        },
+        body: file
+      });
+
       clearInterval(ticker);
 
-      if (error) {
-        showFormMsg("Upload failed: " + error.message + " | " + (error.error || "") + " | status: " + (error.statusCode || ""), "red");
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text();
+        showFormMsg("Upload failed (" + uploadRes.status + "): " + errText, "red");
         resetDropZone();
         return;
       }
 
-      const { data } = sb.storage.from("productimages").getPublicUrl(path);
-      url = data.publicUrl;
+      const url = `${cfg.supabaseUrl}/storage/v1/object/public/${bucket}/${path}`;
       bar.style.width = "100%";
 
       setTimeout(() => {
