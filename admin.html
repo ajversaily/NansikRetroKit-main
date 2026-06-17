@@ -408,9 +408,12 @@
       const ext = file.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
       const path = `product-${Date.now()}.${ext}`;
       const bucket = "productimages";
+      const supabaseUrl = cfg.supabaseUrl.replace(/\/$/, ""); // strip trailing slash if any
+      const uploadUrl = `${supabaseUrl}/storage/v1/object/${bucket}/${path}`;
+      console.log("Uploading to:", uploadUrl);
 
       // Upload directly to Supabase Storage REST API — no JS client involved
-      const uploadRes = await fetch(`${cfg.supabaseUrl}/storage/v1/object/${bucket}/${path}`, {
+      const uploadRes = await fetch(uploadUrl, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${cfg.supabaseAnonKey}`,
