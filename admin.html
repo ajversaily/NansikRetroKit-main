@@ -18,6 +18,9 @@
     .btn-edit:hover { background: #34495e; }
     #loginScreen { display: flex; }
     #adminPanel { display: none; }
+    .drop-zone { border: 2px dashed #444; border-radius: 0.5rem; transition: border-color 0.2s, background 0.2s; cursor: pointer; }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: #aaa; background: #1f1f1f; }
+    .drop-zone.uploaded { border-color: #4ade80; border-style: solid; }
   </style>
 </head>
 <body class="min-h-screen">
@@ -75,8 +78,31 @@
           <input id="f_description" type="text" placeholder="e.g. Iconic Retro Jersey" class="w-full px-4 py-2 rounded text-sm" />
         </div>
         <div class="md:col-span-2">
-          <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Main Image URL</label>
-          <input id="f_image" type="text" placeholder="https://... or images/filename.jpg" class="w-full px-4 py-2 rounded text-sm" />
+          <label class="block text-xs text-gray-400 mb-2 uppercase tracking-wider">Main Image</label>
+          <!-- Drop zone -->
+          <div
+            id="dropZone"
+            class="drop-zone p-6 text-center mb-3"
+            onclick="document.getElementById('fileInput').click()"
+            ondragover="handleDragOver(event)"
+            ondragleave="handleDragLeave(event)"
+            ondrop="handleDrop(event)"
+          >
+            <input id="fileInput" type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event)" />
+            <div id="dropZoneContent">
+              <p class="text-gray-400 text-sm">Drop image here or <span class="underline cursor-pointer">click to browse</span></p>
+              <p class="text-gray-600 text-xs mt-1">JPG, PNG, WebP — max 5 MB</p>
+            </div>
+            <div id="uploadProgress" class="hidden">
+              <div class="w-full bg-gray-700 rounded-full h-1.5 mt-2">
+                <div id="uploadBar" class="bg-white h-1.5 rounded-full transition-all" style="width:0%"></div>
+              </div>
+              <p class="text-gray-400 text-xs mt-2">Uploading...</p>
+            </div>
+          </div>
+          <!-- URL field (auto-filled after upload, or type manually) -->
+          <input id="f_image" type="text" placeholder="URL auto-fills after upload — or paste one manually" class="w-full px-4 py-2 rounded text-sm" oninput="updateImagePreview()" />
+          <img id="imagePreview" src="" alt="preview" class="hidden mt-3 w-24 h-24 object-cover rounded border border-gray-700" />
         </div>
         <div class="md:col-span-2">
           <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Extra Image URLs <span class="text-gray-600">(one per line)</span></label>
@@ -283,6 +309,7 @@
       document.getElementById("f_id").disabled = false;
       document.getElementById("formTitle").textContent = "Add New Product";
       document.getElementById("cancelEditBtn").classList.add("hidden");
+      resetDropZone();
     }
 
     // ── Utilities ────────────────────────────────────────────────────────────────
@@ -297,6 +324,112 @@
 
     function escHtml(str) {
       return String(str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    // ── Image Upload ─────────────────────────────────────────────────────────────
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById("dropZone").classList.add("drag-over");
+    }
+
+    function handleDragLeave(e) {
+      document.getElementById("dropZone").classList.remove("drag-over");
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById("dropZone").classList.remove("drag-over");
+      const file = e.dataTransfer.files[0];
+      if (file) uploadFile(file);
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) uploadFile(file);
+    }
+
+    async function uploadFile(file) {
+      if (!file.type.startsWith("image/")) {
+        showFormMsg("Please select an image file.", "red");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showFormMsg("Image must be under 5 MB.", "red");
+        return;
+      }
+
+      const zone = document.getElementById("dropZone");
+      const progress = document.getElementById("uploadProgress");
+      const bar = document.getElementById("uploadBar");
+      document.getElementById("dropZoneContent").classList.add("hidden");
+      progress.classList.remove("hidden");
+      zone.classList.remove("uploaded");
+
+      // Animate the bar to show activity
+      let pct = 0;
+      const ticker = setInterval(() => {
+        pct = Math.min(pct + 8, 85);
+        bar.style.width = pct + "%";
+      }, 120);
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload-image", {
+        method: "POST",
+        headers: { "x-admin-password": currentPassword },
+        body: formData
+      });
+
+      clearInterval(ticker);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showFormMsg(err.error || "Upload failed.", "red");
+        resetDropZone();
+        return;
+      }
+
+      const { url } = await res.json();
+      bar.style.width = "100%";
+
+      setTimeout(() => {
+        progress.classList.add("hidden");
+        document.getElementById("dropZoneContent").classList.remove("hidden");
+        zone.classList.add("uploaded");
+        // Show thumbnail in the drop zone
+        zone.querySelector("#dropZoneContent").innerHTML = `
+          <img src="${escHtml(url)}" class="w-20 h-20 object-cover rounded mx-auto mb-2">
+          <p class="text-green-400 text-xs">Uploaded! <span class="text-gray-500 underline cursor-pointer" onclick="resetDropZone()">Change</span></p>
+        `;
+        document.getElementById("f_image").value = url;
+        updateImagePreview();
+      }, 300);
+    }
+
+    function resetDropZone() {
+      const zone = document.getElementById("dropZone");
+      zone.classList.remove("uploaded", "drag-over");
+      document.getElementById("uploadProgress").classList.add("hidden");
+      document.getElementById("uploadBar").style.width = "0%";
+      document.getElementById("dropZoneContent").classList.remove("hidden");
+      document.getElementById("dropZoneContent").innerHTML = `
+        <p class="text-gray-400 text-sm">Drop image here or <span class="underline cursor-pointer">click to browse</span></p>
+        <p class="text-gray-600 text-xs mt-1">JPG, PNG, WebP — max 5 MB</p>
+      `;
+      document.getElementById("fileInput").value = "";
+    }
+
+    function updateImagePreview() {
+      const url = document.getElementById("f_image").value.trim();
+      const preview = document.getElementById("imagePreview");
+      if (url) {
+        preview.src = url;
+        preview.classList.remove("hidden");
+      } else {
+        preview.classList.add("hidden");
+      }
     }
   </script>
 
