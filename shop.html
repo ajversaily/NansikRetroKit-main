@@ -175,9 +175,11 @@
         products = await res.json();
       } catch (_) { return; }
 
+      console.log("API products:", products);
       products.forEach(p => {
         if (hardcodedIds.has(p.id)) return; // already shown
         const imgSrc = p.image || (Array.isArray(p.images) && p.images[0]) || "";
+        console.log("Rendering product:", p.id, "imgSrc:", imgSrc);
         const article = document.createElement("article");
         article.className = "kit-card reveal";
 
