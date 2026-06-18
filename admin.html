@@ -106,8 +106,24 @@
           <img id="imagePreview" src="" alt="preview" class="hidden mt-3 w-24 h-24 object-cover rounded border border-gray-700" />
         </div>
         <div class="md:col-span-2">
-          <label class="block text-xs text-gray-400 mb-1 uppercase tracking-wider">Extra Image URLs <span class="text-gray-600">(one per line)</span></label>
-          <textarea id="f_images" rows="3" placeholder="https://image1.jpg&#10;https://image2.jpg" class="w-full px-4 py-2 rounded text-sm resize-none"></textarea>
+          <label class="block text-xs text-gray-400 mb-2 uppercase tracking-wider">Extra Images <span class="text-gray-600">(optional — shown in carousel)</span></label>
+          <!-- Thumbnail strip of added extra images -->
+          <div id="extraImagesStrip" class="flex flex-wrap gap-3 mb-3"></div>
+          <!-- Drop zone for extra images -->
+          <div
+            id="extraDropZone"
+            class="drop-zone p-4 text-center cursor-pointer"
+            onclick="document.getElementById('extraFileInput').click()"
+            ondragover="handleExtraDragOver(event)"
+            ondragleave="handleExtraDragLeave(event)"
+            ondrop="handleExtraDrop(event)"
+          >
+            <input id="extraFileInput" type="file" accept="image/*" multiple class="hidden" onchange="handleExtraFileSelect(event)" />
+            <p class="text-gray-400 text-sm">Drop extra images here or <span class="underline">click to browse</span></p>
+            <p class="text-gray-600 text-xs mt-1">You can add multiple</p>
+          </div>
+          <!-- Hidden field stores the URLs as JSON -->
+          <input id="f_images" type="hidden" value="[]" />
         </div>
       </div>
 
@@ -238,7 +254,7 @@
       const price    = document.getElementById("f_price").value.trim();
       const desc     = document.getElementById("f_description").value.trim();
       const image    = document.getElementById("f_image").value.trim();
-      const extraRaw = document.getElementById("f_images").value.trim();
+      const extraUrls = JSON.parse(document.getElementById("f_images").value || "[]");
 
       if (!id || !name || !price) {
         showFormMsg("ID, name, and price are required.", "red");
@@ -249,7 +265,7 @@
         return;
       }
 
-      const images = [image, ...extraRaw.split("\n").map(s => s.trim())].filter(Boolean);
+      const images = [image, ...extraUrls].filter(Boolean);
 
       const res = await fetch("/api/admin-products", {
         method: "POST",
@@ -297,7 +313,8 @@
       document.getElementById("f_description").value = p.description || "";
       document.getElementById("f_image").value = p.image || "";
       const extras = (p.images || []).filter(img => img !== p.image);
-      document.getElementById("f_images").value = extras.join("\n");
+      document.getElementById("f_images").value = JSON.stringify(extras);
+      renderExtraStrip(extras);
       document.getElementById("formTitle").textContent = "Edit Product";
       document.getElementById("cancelEditBtn").classList.remove("hidden");
       document.getElementById("formMsg").classList.add("hidden");
@@ -310,9 +327,11 @@
 
     function clearForm() {
       editingId = null;
-      ["f_id", "f_name", "f_price", "f_description", "f_image", "f_images"].forEach(id => {
+      ["f_id", "f_name", "f_price", "f_description", "f_image"].forEach(id => {
         document.getElementById(id).value = "";
       });
+      document.getElementById("f_images").value = "[]";
+      renderExtraStrip([]);
       document.getElementById("f_id").disabled = false;
       document.getElementById("formTitle").textContent = "Add New Product";
       document.getElementById("cancelEditBtn").classList.add("hidden");
@@ -448,6 +467,103 @@
         document.getElementById("f_image").value = url;
         updateImagePreview();
       }, 300);
+    }
+
+    // ── Extra Images ─────────────────────────────────────────────────────────────
+
+    function getExtraUrls() {
+      try { return JSON.parse(document.getElementById("f_images").value || "[]"); } catch(_) { return []; }
+    }
+
+    function setExtraUrls(urls) {
+      document.getElementById("f_images").value = JSON.stringify(urls);
+      renderExtraStrip(urls);
+    }
+
+    function renderExtraStrip(urls) {
+      const strip = document.getElementById("extraImagesStrip");
+      strip.innerHTML = "";
+      urls.forEach((url, i) => {
+        const wrap = document.createElement("div");
+        wrap.className = "relative";
+        wrap.innerHTML = `
+          <img src="${escHtml(url)}" class="w-20 h-20 object-cover rounded border border-gray-700">
+          <button onclick="removeExtraImage(${i})" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 text-white text-xs flex items-center justify-center leading-none" title="Remove">&times;</button>
+        `;
+        strip.appendChild(wrap);
+      });
+    }
+
+    function removeExtraImage(index) {
+      const urls = getExtraUrls();
+      urls.splice(index, 1);
+      setExtraUrls(urls);
+    }
+
+    function handleExtraDragOver(e) {
+      e.preventDefault();
+      document.getElementById("extraDropZone").classList.add("drag-over");
+    }
+
+    function handleExtraDragLeave(e) {
+      document.getElementById("extraDropZone").classList.remove("drag-over");
+    }
+
+    function handleExtraDrop(e) {
+      e.preventDefault();
+      document.getElementById("extraDropZone").classList.remove("drag-over");
+      [...e.dataTransfer.files].forEach(f => uploadExtraFile(f));
+    }
+
+    function handleExtraFileSelect(e) {
+      [...e.target.files].forEach(f => uploadExtraFile(f));
+      e.target.value = "";
+    }
+
+    async function uploadExtraFile(file) {
+      if (!file.type.startsWith("image/")) return;
+      if (file.size > 10 * 1024 * 1024) { showFormMsg("Image must be under 10 MB.", "red"); return; }
+
+      const zone = document.getElementById("extraDropZone");
+      zone.classList.add("drag-over");
+      zone.querySelector("p").textContent = "Uploading...";
+
+      let cfg;
+      try { cfg = await getUploadConfig(); } catch(e) {
+        showFormMsg(e.message, "red");
+        zone.classList.remove("drag-over");
+        return;
+      }
+
+      const ext = file.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const path = `product-${Date.now()}.${ext}`;
+      const bucket = "productimages";
+      const supabaseUrl = cfg.supabaseUrl.replace(/\/$/, "");
+
+      const uploadRes = await fetch(`${supabaseUrl}/storage/v1/object/${bucket}/${path}`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${cfg.supabaseAnonKey}`,
+          "apikey": cfg.supabaseAnonKey,
+          "Content-Type": file.type,
+          "x-upsert": "false"
+        },
+        body: file
+      });
+
+      zone.classList.remove("drag-over");
+      zone.querySelector("p").textContent = "Drop extra images here or click to browse";
+
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text();
+        showFormMsg("Upload failed (" + uploadRes.status + "): " + errText, "red");
+        return;
+      }
+
+      const url = `${supabaseUrl}/storage/v1/object/public/${bucket}/${path}`;
+      const urls = getExtraUrls();
+      urls.push(url);
+      setExtraUrls(urls);
     }
 
     function resetDropZone() {
