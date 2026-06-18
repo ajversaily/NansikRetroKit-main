@@ -2,7 +2,7 @@
 const REDUCE_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // ============= PRODUCT PAGE =============
-function initProductPage() {
+async function initProductPage() {
   const params = new URLSearchParams(window.location.search);
   let productId = params.get("id") || productSlug(params.get("name"));
   let product = getProduct(productId);
@@ -10,16 +10,25 @@ function initProductPage() {
   if (!product && params.get("name")) {
     const requestedName = decodeURIComponent(params.get("name"));
     product = Object.values(PRODUCTS).find((item) => item.name === requestedName) || null;
-    if (product) {
-      productId = product.id;
-    }
+    if (product) productId = product.id;
   }
 
-  const name = product 
-    ? product.name 
+  // If still not found, check Supabase for admin-added products
+  if (!product && productId) {
+    try {
+      const res = await fetch("/api/products");
+      if (res.ok) {
+        const all = await res.json();
+        product = all.find(p => p.id === productId) || null;
+      }
+    } catch (_) {}
+  }
+
+  const name = product
+    ? product.name
     : (params.get("name") ? decodeURIComponent(params.get("name")) : "Unnamed Product");
-  const desc = product 
-    ? productDesc(product) 
+  const desc = product
+    ? `${product.name} | Price: $${Number(product.price).toFixed(2)} | ${product.description || ""}`
     : (params.get("desc") ? decodeURIComponent(params.get("desc")) : "No description available.");
 
   function fixedImagePath(image) {
@@ -29,7 +38,8 @@ function initProductPage() {
   const imagesParam = params.get("images");
   let images;
   if (product) {
-    images = (product.images && product.images.length) ? product.images.map(fixedImagePath) : [fixedImagePath(product.image)];
+    const imgs = Array.isArray(product.images) && product.images.length ? product.images : [product.image];
+    images = imgs.map(img => img.startsWith("http") ? img : fixedImagePath(img));
   } else if (imagesParam) {
     images = imagesParam.split(",").map(img => fixedImagePath(decodeURIComponent(img)));
   } else {

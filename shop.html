@@ -158,6 +158,49 @@
   <script src="js/store.js"></script>
   <script src="js/main.js"></script>
   <script src="js/theme.js"></script>
+  <script>
+    // Fetch admin-added products from Supabase and append any not already in the hardcoded grid
+    document.addEventListener("DOMContentLoaded", async () => {
+      const grid = document.querySelector(".kit-grid");
+      if (!grid) return;
+
+      const hardcodedIds = new Set(
+        [...grid.querySelectorAll("[data-product-id]")].map(el => el.getAttribute("data-product-id"))
+      );
+
+      let products;
+      try {
+        const res = await fetch("/api/products");
+        if (!res.ok) return;
+        products = await res.json();
+      } catch (_) { return; }
+
+      products.forEach(p => {
+        if (hardcodedIds.has(p.id)) return; // already shown
+        const article = document.createElement("article");
+        article.className = "kit-card reveal";
+        article.innerHTML = `
+          <div class="kit-card__media">
+            <button class="kit-add" aria-label="Add ${p.name} to cart"
+              data-action="quick-add" data-product-id="${p.id}">+</button>
+            <img class="kit-card__img" src="${p.image}" alt="${p.name}"
+              data-action="view-product"
+              data-product-name="${p.name}"
+              data-product-image="${p.image}"
+              data-product-desc="${p.name} | Price: $${Number(p.price).toFixed(2)} | ${p.description || ''}">
+          </div>
+          <div class="kit-card__meta">
+            <span class="kit-card__name">${p.name}</span>
+            <span class="kit-card__price">$${Number(p.price).toFixed(2)}</span>
+          </div>
+        `;
+        grid.appendChild(article);
+      });
+
+      // Rebind click handlers for the newly added cards
+      bindPageActions();
+    });
+  </script>
   <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
