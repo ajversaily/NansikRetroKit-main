@@ -177,23 +177,38 @@
 
       products.forEach(p => {
         if (hardcodedIds.has(p.id)) return; // already shown
+        const imgSrc = p.image || (Array.isArray(p.images) && p.images[0]) || "";
         const article = document.createElement("article");
         article.className = "kit-card reveal";
-        article.innerHTML = `
-          <div class="kit-card__media">
-            <button class="kit-add" aria-label="Add ${p.name} to cart"
-              data-action="quick-add" data-product-id="${p.id}">+</button>
-            <img class="kit-card__img" src="${p.image}" alt="${p.name}"
-              data-action="view-product"
-              data-product-name="${p.name}"
-              data-product-image="${p.image}"
-              data-product-desc="${p.name} | Price: $${Number(p.price).toFixed(2)} | ${p.description || ''}">
-          </div>
-          <div class="kit-card__meta">
-            <span class="kit-card__name">${p.name}</span>
-            <span class="kit-card__price">$${Number(p.price).toFixed(2)}</span>
-          </div>
-        `;
+
+        const imgEl = document.createElement("img");
+        imgEl.className = "kit-card__img";
+        imgEl.alt = p.name;
+        imgEl.src = imgSrc;
+        imgEl.setAttribute("data-action", "view-product");
+        imgEl.setAttribute("data-product-name", p.name);
+        imgEl.setAttribute("data-product-image", imgSrc);
+        imgEl.setAttribute("data-product-desc", `${p.name} | Price: $${Number(p.price).toFixed(2)} | ${p.description || ""}`);
+        imgEl.onerror = function() { this.onerror = null; this.src = "images/redkappa.jpeg"; };
+
+        const btn = document.createElement("button");
+        btn.className = "kit-add";
+        btn.setAttribute("aria-label", `Add ${p.name} to cart`);
+        btn.setAttribute("data-action", "quick-add");
+        btn.setAttribute("data-product-id", p.id);
+        btn.textContent = "+";
+
+        const media = document.createElement("div");
+        media.className = "kit-card__media";
+        media.appendChild(btn);
+        media.appendChild(imgEl);
+
+        const meta = document.createElement("div");
+        meta.className = "kit-card__meta";
+        meta.innerHTML = `<span class="kit-card__name">${p.name}</span><span class="kit-card__price">$${Number(p.price).toFixed(2)}</span>`;
+
+        article.appendChild(media);
+        article.appendChild(meta);
         grid.appendChild(article);
       });
 
