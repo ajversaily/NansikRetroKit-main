@@ -171,11 +171,11 @@ body { animation: page-fade-in 0.4s ease; }
 .featured-tagline {
   max-width: 1100px;
   margin: 3rem auto 0;
-  padding: 0 2rem;
+  padding: 0 2rem 2rem;
 }
 .featured-tagline__main {
   font-family: var(--display);
-  font-size: 1.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ink);
