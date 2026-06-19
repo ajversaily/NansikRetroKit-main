@@ -34,7 +34,7 @@ module.exports = async (req, res) => {
 
   // POST = create or update (upsert)
   if (req.method === "POST") {
-    const { id, name, price, description, image, images } = body;
+    const { id, name, price, description, image, images, featured, sort_order } = body;
 
     if (!id || !name || !price) {
       return res.status(400).json({ error: "id, name, and price are required." });
@@ -46,7 +46,9 @@ module.exports = async (req, res) => {
       price: parseFloat(price),
       description: description || "",
       image: image || "",
-      images: Array.isArray(images) ? images : (image ? [image] : [])
+      images: Array.isArray(images) ? images : (image ? [image] : []),
+      featured: featured === true || featured === "true",
+      sort_order: sort_order !== undefined && sort_order !== "" ? parseInt(sort_order, 10) : null
     };
 
     const { data, error } = await supabase

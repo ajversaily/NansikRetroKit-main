@@ -167,6 +167,28 @@ body { animation: page-fade-in 0.4s ease; }
 .manifesto .lead { font-weight: 700; }
 .manifesto em { font-style: italic; }
 
+/* ---------- Featured page tagline ---------- */
+.featured-tagline {
+  max-width: 1100px;
+  margin: 3rem auto 0;
+  padding: 0 2rem;
+}
+.featured-tagline__main {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 0.35rem;
+}
+.featured-tagline__sub {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
 /* ---------- Section label with coral bullet ---------- */
 .section-label {
   max-width: 1100px;
@@ -416,6 +438,26 @@ body { animation: page-fade-in 0.4s ease; }
   position: relative;
   z-index: 1;
 }
+/* Wave divider just below the masthead */
+.masthead-wave {
+  display: block;
+  width: 100%;
+  height: 56px;
+  color: var(--ink);
+  opacity: 0.45;
+  pointer-events: none;
+  animation: wave-bob 4s ease-in-out infinite;
+}
+.masthead-wave path,
+.footer-wave-art path {
+  transition: d 1.8s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .masthead-wave { animation: none; }
+  .masthead-wave path, .footer-wave-art path { transition: none; }
+}
+
 /* Hand-drawn line-art wave that spans the full footer bottom */
 .footer-wave-art {
   display: block;

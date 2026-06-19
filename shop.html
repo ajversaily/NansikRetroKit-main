@@ -22,13 +22,20 @@
     </nav>
   </header>
 
+  <!-- Wave below masthead -->
+  <svg class="masthead-wave" viewBox="0 0 1200 56" preserveAspectRatio="none"
+       fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+       vector-effect="non-scaling-stroke" aria-hidden="true">
+    <path id="mastheadWavePath" d="M0 44 C 20 44,50 8,75 8 C 82 8,90 4,92 10 C 94 16,86 22,80 18 C 74 14,110 44,150 44 C 170 44,200 8,225 8 C 232 8,240 4,242 10 C 244 16,236 22,230 18 C 224 14,260 44,300 44 C 320 44,350 8,375 8 C 382 8,390 4,392 10 C 394 16,386 22,380 18 C 374 14,410 44,450 44 C 470 44,500 8,525 8 C 532 8,540 4,542 10 C 544 16,536 22,530 18 C 524 14,560 44,600 44 C 620 44,650 8,675 8 C 682 8,690 4,692 10 C 694 16,686 22,680 18 C 674 14,710 44,750 44 C 770 44,800 8,825 8 C 832 8,840 4,842 10 C 844 16,836 22,830 18 C 824 14,860 44,900 44 C 920 44,950 8,975 8 C 982 8,990 4,992 10 C 994 16,986 22,980 18 C 974 14,1010 44,1050 44 C 1070 44,1100 8,1125 8 C 1132 8,1140 4,1142 10 C 1144 16,1136 22,1130 18 C 1124 14,1160 44,1200 44" />
+  </svg>
+
   <!-- Manifesto -->
   <section class="manifesto reveal">
-    <p><span class="lead">The full shelf.</span> Every kit we have, all in one place. Click any jersey to pick your size and add it to your cart.</p>
+    <p><span class="lead">The full shelf.</span></p>
   </section>
 
   <!-- Products -->
-  <p class="section-label reveal">All products</p>
+  <p class="section-label reveal">All kits</p>
   <section class="kit-grid">
 
     <!-- 1: C.Ronaldo Sporting — SOLD OUT -->
@@ -158,6 +165,19 @@
   <script src="js/store.js"></script>
   <script src="js/main.js"></script>
   <script src="js/theme.js"></script>
+  <script>
+    // Wave shape cycling
+    (function () {
+      const mA = "M0 44 C 20 44,50 8,75 8 C 82 8,90 4,92 10 C 94 16,86 22,80 18 C 74 14,110 44,150 44 C 170 44,200 8,225 8 C 232 8,240 4,242 10 C 244 16,236 22,230 18 C 224 14,260 44,300 44 C 320 44,350 8,375 8 C 382 8,390 4,392 10 C 394 16,386 22,380 18 C 374 14,410 44,450 44 C 470 44,500 8,525 8 C 532 8,540 4,542 10 C 544 16,536 22,530 18 C 524 14,560 44,600 44 C 620 44,650 8,675 8 C 682 8,690 4,692 10 C 694 16,686 22,680 18 C 674 14,710 44,750 44 C 770 44,800 8,825 8 C 832 8,840 4,842 10 C 844 16,836 22,830 18 C 824 14,860 44,900 44 C 920 44,950 8,975 8 C 982 8,990 4,992 10 C 994 16,986 22,980 18 C 974 14,1010 44,1050 44 C 1070 44,1100 8,1125 8 C 1132 8,1140 4,1142 10 C 1144 16,1136 22,1130 18 C 1124 14,1160 44,1200 44";
+      const mB = "M0 42 C 25 42,55 6,78 5 C 86 5,94 1,97 8 C 99 15,90 21,84 17 C 78 13,114 42,150 42 C 175 42,205 6,228 5 C 236 5,244 1,247 8 C 249 15,240 21,234 17 C 228 13,264 42,300 42 C 325 42,355 6,378 5 C 386 5,394 1,397 8 C 399 15,390 21,384 17 C 378 13,414 42,450 42 C 475 42,505 6,528 5 C 536 5,544 1,547 8 C 549 15,540 21,534 17 C 528 13,564 42,600 42 C 625 42,655 6,678 5 C 686 5,694 1,697 8 C 699 15,690 21,684 17 C 678 13,714 42,750 42 C 775 42,805 6,828 5 C 836 5,844 1,847 8 C 849 15,840 21,834 17 C 828 13,864 42,900 42 C 925 42,955 6,978 5 C 986 5,994 1,997 8 C 999 15,990 21,984 17 C 978 13,1014 42,1050 42 C 1075 42,1105 6,1128 5 C 1136 5,1144 1,1147 8 C 1149 15,1140 21,1134 17 C 1128 13,1164 42,1200 42";
+      let idx = 0;
+      setInterval(() => {
+        idx = (idx + 1) % 2;
+        const mp = document.getElementById('mastheadWavePath');
+        if (mp) mp.style.setProperty('d', `path("${idx === 0 ? mA : mB}")`);
+      }, 4000);
+    })();
+  </script>
   <script>
     // Fetch admin-added products from Supabase and append any not already in the hardcoded grid
     document.addEventListener("DOMContentLoaded", async () => {
